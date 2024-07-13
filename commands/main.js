@@ -30,12 +30,6 @@ const gemini = genAI.getGenerativeModel(
 );
 
 
-const getExplainationFromGemeni = async (code) => {
-  const prompt = "Please explain the code enclosed in <CODE> tag. <CODE>" + code + "</CODE>";
-  const result = await gemini.generateContent(prompt);
-  const response = result.response;
-  return response.text();
-}
 
 const genCode = async (instruction, fileName, editor) => {
   if (!apiKey) {
@@ -83,34 +77,42 @@ const genCode = async (instruction, fileName, editor) => {
 }
 
 
-
-const style = `
-    <style>
-    #outer-div {
+const getExplainWebViewContent= (() => {
+  // Return the initial HTML content for the WebView
+  return `
+  <html>
+  <head>
+      <title>Code Explanation</title>
+      <style>
+       #content {
       font-size: 1.5em;
       padding: 1em;
       word-wrap:break-word;
       width:80%;
     }
-    </style>
+      </style>
+      <script>
+          // Example of sending a message to the extension
+          vscode.postMessage({ command: 'logMessage', text: 'Hello from WebView!' });
+      </script>
+  </head>
+  <body>
+      <div id="content"></div>
+      <script>
+          // Example of receiving a message from the extension
+          window.addEventListener('message', event => {
+              const message = event.data;
+              if (message.command === 'updateContent') {
+                  document.getElementById('content').innerHTML = message.text;
+              }
+          });
+      </script>
+  </body>
+  </html>
   `;
-const script = `
-  <script>
-    const dots = document.getElementById("dots");
-    dots.style.fontSize = "45px";
-    let dot = "";
-    setInterval(() => {
-      if (dot.length < 4){
-        dot += ".";
-      }else{
-        dot = "";
-      }
-      dots.innerHTML = dot;
-    }, 500);
-  </script>
+});
 
-`;
-const getCodeExplanation = async (code) => {
+const getCodeExplanation = async (code, panel) => {
   if (!apiKey) {
     vscode.window.showErrorMessage(
       "Please set your Gemini API key in the extension settings."
@@ -121,79 +123,18 @@ const getCodeExplanation = async (code) => {
     return "Please select the code you want to explain";
   }
   vscode.window.showInformationMessage(`Waiting for Your Explanation...`);
-  let panel = vscode.window.createWebviewPanel(
-    "waitcodeExplanation", // Id
-    "Code Explanation", // Title
-    vscode.ViewColumn.One, // Column
-    {
-      enableScripts: true,
-    } // Options
-  );
-
-  panel.webview.html = `
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Loading...</title>
-        ${style}
-    </head>
-    <body>
-      <div id="outer-div">Waiting for explanation <span id="dots"> </span> </div>
-      ${script}
-    </body>
-  </html>
-  `;
-
-  panel.onDidDispose(() => {
-    panel.dispose();
-  });
-  // Ask Gemini
-  try {
-    const explanation = await getExplainationFromGemeni(code);
-    vscode.window.showInformationMessage("Explanation Ready!");
-    panel.dispose();
-    return explanation;
-  } catch (err) {
-    console.error(err);
-    panel.dispose();
-    return;
+  const prompt = "Please explain the code enclosed in <CODE> tag. <CODE>" + code + "</CODE>";
+  const result = await gemini.generateContentStream([prompt]);
+  let text = "";
+  for await (const chunk of result.stream) {
+    text += chunk.text();
+    panel.webview.postMessage({ command: 'updateContent', text: md.render(text) });
+  // console.log(chunkText);
   }
-};
-
-const showCodeExplanation = (code) => {
-  let panel = vscode.window.createWebviewPanel(
-    "codeExplanation", // Id
-    "Code Explanation", // Title
-    vscode.ViewColumn.Beside, // Column
-    {} // Options
-  );
-  code = md.render(code);
-  panel.webview.html = `
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Code Explanation</title>
-        ${style}
-    </head>
-    <body>
-      <div id="outer-div">${code}</div>
-    </body>
-</html>
-
-  `;
-
-  panel.onDidDispose(() => {
-    panel.dispose();
-  });
-};
-
-
+  
+}
 module.exports = {
   getCodeExplanation,
-  showCodeExplanation,
-  genCode
+  genCode,
+  getExplainWebViewContent
 };

@@ -2,7 +2,7 @@
   "name": "gemini-code-companion",
   "displayName": "Gemini Code Companion",
   "description": "A VS code extension you can use for your coding needs such as generate code, explain code, etc. using Gemini API.",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/xzhaos/gemini-code-companion"
@@ -107,7 +107,7 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "pretest": "npm run lint",
+    "pretest": "npm run lint", 
     "test": "node ./test/runTest.js",
     "vscode:prepublish": "npm run esbuild-base -- --minify",
     "esbuild-base": "esbuild ./extension.js --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",

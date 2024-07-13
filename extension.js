@@ -4,14 +4,12 @@ const vscode = require("vscode");
 // Import the commands
 const {
   getCodeExplanation,
-  showCodeExplanation,
   genCode,
+  getExplainWebViewContent,
 } = require("./commands/main");
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-
-const config = vscode.workspace.getConfiguration("gemini-code-companion");
 
 const errorMessage =
   "Something went wrong! Please make sure your API key is correct";
@@ -26,35 +24,7 @@ function activate(context) {
   console.log(
     'Congratulations, your extension "gemini-code-companion" is now active!'
   );
-
-  // Create a sidepanel
-  let panelDisposable = vscode.commands.registerCommand(
-    "gemini-code-companion.explain",
-    async function () {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showErrorMessage("The editor is empty or not active");
-        return;
-      }
-      // Get the code inside the editor
-      const document = editor.document;
-      const selection = editor.selection;
-      const text = document.getText(selection);
-
-      try {
-        let explanation = await getCodeExplanation(text);
-        if (!explanation) {
-          explanation = errorMessage;
-        }
-        showCodeExplanation(explanation);
-      } catch (err) {
-        vscode.window.showErrorMessage(failMessage);
-        console.error(err);
-      }
-    }
-  );
-  context.subscriptions.push(panelDisposable);
-
+ 
   // create code generation
   let codeGenDisposable = vscode.commands.registerCommand('gemini-code-companion.gen-code', () => {
     let editor = vscode.window.activeTextEditor;
@@ -81,6 +51,43 @@ function activate(context) {
   });
 
   context.subscriptions.push(codeGenDisposable);
+  // create a panel that show at the bottom of vs code ide
+
+// Register a command that will show our panel
+let explainPanelDisposable = vscode.commands.registerCommand('gemini-code-companion.explain', async function () {
+  // Create and show a new webview panel
+  const panel = vscode.window.createWebviewPanel(
+    'gemini-code-companion.explain',
+    'Explaination',
+    vscode.ViewColumn.Two,
+    {
+      // Enable scripts in the webview
+      enableScripts: true,
+    }
+  );
+
+  // Set the webview's content
+  panel.webview.html = getExplainWebViewContent();
+  const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage("The editor is empty or not active");
+        return;
+      }
+      // Get the code inside the editor
+      const document = editor.document;
+      const selection = editor.selection;
+      const text = document.getText(selection);
+
+      try {
+        await getCodeExplanation(text, panel);
+      } catch (err) {
+        vscode.window.showErrorMessage(failMessage);
+        console.error(err);
+      }
+  
+});
+
+context.subscriptions.push(explainPanelDisposable);
 
 }
 
