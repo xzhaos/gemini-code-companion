@@ -1,11 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const path = require('path');
 // Import the commands
 const {
   getCodeExplanation,
   genCode,
   getExplainWebViewContent,
+  genTestCode
 } = require("./commands/main");
 
 // This method is called when your extension is activated
@@ -88,6 +90,44 @@ let explainPanelDisposable = vscode.commands.registerCommand('gemini-code-compan
 });
 
 context.subscriptions.push(explainPanelDisposable);
+
+// register a command with name gemini-code-companion.gen-test.
+// inside the function, the command will create a new file in the project folder
+
+vscode.commands.registerCommand('gemini-code-companion.gen-test', async () => {
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+  if (!workspaceFolder) {
+    vscode.window.showErrorMessage('No workspace folder found');
+    return;
+  }
+
+  const editor = vscode.window.activeTextEditor;
+  if (editor) {
+    // get the file name from current editor with relative path to project folder
+    let selection = editor.selection;
+    const document = editor.document;
+    const code = document.getText(selection);
+    
+    const currentFileName = editor.document.fileName;
+    //console.log(currentFileName);
+    const relativePath = currentFileName.replace(workspaceFolder.uri.fsPath, '');
+    //console.log(relativePath);
+    //create a new file name based on old file name by appending ".test" but keep the same extension
+    const testFileName = relativePath.replace(/\.(.*)$/, '.test.$1'); 
+    const filePath = path.join(workspaceFolder.uri.fsPath, testFileName);
+
+  try {
+    await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(''));
+    await vscode.window.showTextDocument(vscode.Uri.file(filePath));
+    await genTestCode(code, filePath, editor);
+  } catch (error) {
+    vscode.window.showErrorMessage(`Error creating file: ${error.message}`);
+  }
+    return editor.document.fileName;
+  }
+  
+});
+
 
 }
 

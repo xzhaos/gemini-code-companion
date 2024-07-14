@@ -133,8 +133,45 @@ const getCodeExplanation = async (code, panel) => {
   }
   
 }
+
+
+const genTestCode = async (code, filePath, editor) => {
+  if (!apiKey) {
+    vscode.window.showErrorMessage(
+      "Please set your Gemini API key in the extension settings."
+    );
+    return;
+  }
+  // console.log(instruction);
+  
+  const prompt = "Please generate the test code based on code enclosed in <CODE> tag." + 
+        "<CODE>" + code + "</CODE>"
+  
+  if (isStreaming) {
+    const result = await gemini.generateContentStream([prompt]);
+// print text as it comes in
+    let text = "";
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      // console.log(chunkText);
+      // vscode append file with content x
+      text += chunkText;
+      await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(text));
+    //
+    }
+
+  } else {
+    const result = await gemini.generateContent(prompt);
+    const response = result.response;
+    const output = response.text();
+    await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(output));
+  }
+  return true;
+}
+
 module.exports = {
   getCodeExplanation,
   genCode,
-  getExplainWebViewContent
+  getExplainWebViewContent,
+  genTestCode
 };
