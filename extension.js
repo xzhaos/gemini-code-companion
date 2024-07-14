@@ -110,16 +110,13 @@ vscode.commands.registerCommand('gemini-code-companion.gen-test', async () => {
     
     const currentFileName = editor.document.fileName;
     //console.log(currentFileName);
-    const relativePath = currentFileName.replace(workspaceFolder.uri.fsPath, '');
-    //console.log(relativePath);
-    //create a new file name based on old file name by appending ".test" but keep the same extension
-    const testFileName = relativePath.replace(/\.(.*)$/, '.test.$1'); 
-    const filePath = path.join(workspaceFolder.uri.fsPath, testFileName);
+ 
+    const testFilePath = currentFileName.replace(/\.(.*)$/, '.test.$1'); 
 
   try {
-    await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(''));
-    await vscode.window.showTextDocument(vscode.Uri.file(filePath));
-    await genTestCode(code, filePath, editor);
+    await vscode.workspace.fs.writeFile(vscode.Uri.file(testFilePath), Buffer.from(''));
+    await vscode.window.showTextDocument(vscode.Uri.file(testFilePath));
+    await genTestCode(code, testFilePath, editor);
   } catch (error) {
     vscode.window.showErrorMessage(`Error creating file: ${error.message}`);
   }

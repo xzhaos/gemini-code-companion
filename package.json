@@ -2,7 +2,7 @@
   "name": "gemini-code-companion",
   "displayName": "Gemini Code Companion",
   "description": "A VS code extension you can use for your coding needs such as generate code, explain code, etc. using Gemini API.",
-  "version": "0.9.0",
+  "version": "0.9.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/xzhaos/gemini-code-companion"

@@ -1,5 +1,5 @@
 # gemini-code-companion
-A VS code extension you can use for your coding needs such as generate code, explain code, etc. using Gemini API. 
+A VS code extension you can use for your coding needs such as generate code, explain code, generate test case, etc. using Gemini API. 
 
 ## Installation
 
