@@ -65,6 +65,7 @@ let explainPanelDisposable = vscode.commands.registerCommand('gemini-code-compan
     {
       // Enable scripts in the webview
       enableScripts: true,
+      retainContextWhenHidden: true,
     }
   );
 
@@ -90,6 +91,7 @@ let explainPanelDisposable = vscode.commands.registerCommand('gemini-code-compan
 });
 
 context.subscriptions.push(explainPanelDisposable);
+
 
 // register a command with name gemini-code-companion.gen-test.
 // inside the function, the command will create a new file in the project folder
