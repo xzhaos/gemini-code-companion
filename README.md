@@ -22,3 +22,10 @@ The right click to find corresponding command in context menu. That's it!
 
 ![Generate code example](https://github.com/xzhaos/gemini-code-companion/blob/main/assets/gencode.gif?raw=true)
 
+### Generate Test Case
+
+**You can change the default test case file location.**
+
+![Generate test case example](https://github.com/xzhaos/gemini-code-companion/blob/main/assets/gentest.gif?raw=true)
+
+

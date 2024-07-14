@@ -122,7 +122,7 @@ const getCodeExplanation = async (code, panel) => {
   if (!code) {
     return "Please select the code you want to explain";
   }
-  vscode.window.showInformationMessage(`Waiting for Your Explanation...`);
+  // vscode.window.showInformationMessage(`Waiting for Your Explanation...`);
   const prompt = "Please explain the code enclosed in <CODE> tag. <CODE>" + code + "</CODE>";
   const result = await gemini.generateContentStream([prompt]);
   let text = "";
@@ -131,6 +131,7 @@ const getCodeExplanation = async (code, panel) => {
     panel.webview.postMessage({ command: 'updateContent', text: md.render(text) });
   // console.log(chunkText);
   }
+  vscode.window.showInformationMessage(`Explanation completed`);
   
 }
 
