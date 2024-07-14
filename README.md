@@ -5,6 +5,10 @@ A VS code extension you can use for your coding needs such as generate code, exp
 
 Find **Gemini Code Companion** in Visual Studio Code market place. https://marketplace.visualstudio.com/items?itemName=xzhaos.gemini-code-companion
 
+## Pre-requisite
+
+You need to get Gemini APK Key: https://ai.google.dev/gemini-api/docs/api-key first. Then set the API key value in **settings -> genimi-code-companion -> API Key**. You can search API Key in settings screen in VS code. 
+
 ## Usage
 
 First **select**
