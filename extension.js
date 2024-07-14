@@ -95,11 +95,6 @@ context.subscriptions.push(explainPanelDisposable);
 // inside the function, the command will create a new file in the project folder
 
 vscode.commands.registerCommand('gemini-code-companion.gen-test', async () => {
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-  if (!workspaceFolder) {
-    vscode.window.showErrorMessage('No workspace folder found');
-    return;
-  }
 
   const editor = vscode.window.activeTextEditor;
   if (editor) {
@@ -112,11 +107,23 @@ vscode.commands.registerCommand('gemini-code-companion.gen-test', async () => {
     //console.log(currentFileName);
  
     const testFilePath = currentFileName.replace(/\.(.*)$/, '.test.$1'); 
+    // prompt user to verify or change file path before proceeding in vs code extension
+
+    const filePath = await vscode.window.showInputBox({
+      placeHolder: `Test file path: ${testFilePath}`,
+      prompt: 'Please verify or change the test file path to save:',
+      value: testFilePath,
+    });
+
+    // If the user cancels, do nothing
+    if (!filePath) {
+      return;
+    }
 
   try {
-    await vscode.workspace.fs.writeFile(vscode.Uri.file(testFilePath), Buffer.from(''));
-    await vscode.window.showTextDocument(vscode.Uri.file(testFilePath));
-    await genTestCode(code, testFilePath, editor);
+    await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(''));
+    await vscode.window.showTextDocument(vscode.Uri.file(filePath));
+    await genTestCode(code, filePath, editor);
   } catch (error) {
     vscode.window.showErrorMessage(`Error creating file: ${error.message}`);
   }
